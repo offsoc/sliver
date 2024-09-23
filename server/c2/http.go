@@ -228,7 +228,10 @@ func getHTTPSConfig(req *clientpb.HTTPListenerReq) *tls.Config {
 		return nil
 	}
 
-	tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
+	}
 	if !req.RandomizeJARM {
 		return tlsConfig
 	}
@@ -248,14 +251,14 @@ func getHTTPSConfig(req *clientpb.HTTPListenerReq) *tls.Config {
 		// tlsConfig.MinVersion = tls.VersionTLS12
 		fallthrough // For compatibility with winhttp
 	case 2:
-		tlsConfig.MinVersion = tls.VersionTLS11
+		// tlsConfig.MinVersion = tls.VersionTLS11
 	default:
-		tlsConfig.MinVersion = tls.VersionTLS10
+		// tlsConfig.MinVersion = tls.VersionTLS10
 	}
 
 	// Randomize the cipher suites
 	allCipherSuites := []uint16{
-		tls.TLS_RSA_WITH_RC4_128_SHA,                      //uint16 = 0x0005 1
+		// tls.TLS_RSA_WITH_RC4_128_SHA,                      //uint16 = 0x0005 1
 		tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,                 //uint16 = 0x000a 2
 		tls.TLS_RSA_WITH_AES_128_CBC_SHA,                  //uint16 = 0x002f 3
 		tls.TLS_RSA_WITH_AES_256_CBC_SHA,                  //uint16 = 0x0035 4
