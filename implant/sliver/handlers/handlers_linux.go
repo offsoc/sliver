@@ -437,6 +437,10 @@ func chownHandler(data []byte, resp RPCResponse) {
 		chown.Response.Err = err.Error()
 		goto finished
 	}
+	if uid > math.MaxInt32 {
+		chown.Response.Err = "uid value out of bounds"
+		goto finished
+	}
 
 	gid_str = chownReq.Gid
 	grp, err = user.LookupGroup(gid_str)
@@ -448,6 +452,10 @@ func chownHandler(data []byte, resp RPCResponse) {
 	gid, err = strconv.ParseUint(grp.Gid, 10, 32)
 	if err != nil {
 		chown.Response.Err = err.Error()
+		goto finished
+	}
+	if gid > math.MaxInt32 {
+		chown.Response.Err = "gid value out of bounds"
 		goto finished
 	}
 
