@@ -290,7 +290,6 @@ func getHTTPSConfig(req *clientpb.HTTPListenerReq) *tls.Config {
 	// compatibility we need to make sure we always choose at least one modern RSA
 	// option.
 	modernCiphers := []uint16{
-		tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,       //uint16 = 0xc027 16
 		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,       //uint16 = 0xc02f 17
 		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,       //uint16 = 0xc030 19
 		tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, //uint16 = 0xcca8 21
