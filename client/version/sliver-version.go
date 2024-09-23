@@ -55,8 +55,11 @@ func SemanticVersion() []int {
 		version = version[1:]
 	}
 	for _, part := range strings.Split(version, ".") {
-		number, _ := strconv.Atoi(part)
-		semVer = append(semVer, number)
+		number, err := strconv.ParseInt(part, 10, 32)
+		if err != nil {
+			number = 0 // or handle the error as appropriate
+		}
+		semVer = append(semVer, int(number))
 	}
 	return semVer
 }
