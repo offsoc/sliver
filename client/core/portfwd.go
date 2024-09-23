@@ -166,7 +166,7 @@ func (p *ChannelProxy) HostPort() (string, uint32) {
 		log.Printf("Failed to parse addr %s", p.RemoteAddr)
 		return "", defaultPort
 	}
-	portNumber, err := strconv.Atoi(rawPort)
+	portNumber, err := strconv.ParseUint(rawPort, 10, 32)
 	if err != nil {
 		log.Printf("Failed to parse number from %s", rawPort)
 		return "", defaultPort
