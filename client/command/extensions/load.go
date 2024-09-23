@@ -27,6 +27,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
@@ -698,18 +699,24 @@ func getExtArgs(_ *cobra.Command, args []string, _ string, ext *ExtCommand) ([]b
 		case "integer":
 			fallthrough
 		case "int":
-			val, err := strconv.Atoi(word)
+			val, err := strconv.ParseUint(word, 10, 32)
 			if err != nil {
 				return nil, err
+			}
+			if val > math.MaxUint32 {
+				return nil, fmt.Errorf("value out of range for uint32: %s", word)
 			}
 			err = argsBuffer.AddInt(uint32(val))
 			if err != nil {
 				return nil, err
 			}
 		case "short":
-			val, err := strconv.Atoi(word)
+			val, err := strconv.ParseUint(word, 10, 16)
 			if err != nil {
 				return nil, err
+			}
+			if val > math.MaxUint16 {
+				return nil, fmt.Errorf("value out of range for uint16: %s", word)
 			}
 			err = argsBuffer.AddShort(uint16(val))
 			if err != nil {
