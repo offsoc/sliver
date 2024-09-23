@@ -34,6 +34,7 @@ import (
 	"errors"
 	"io"
 	"sync"
+	"math"
 
 	"filippo.io/age"
 	"github.com/bishopfox/sliver/server/db"
@@ -204,6 +205,9 @@ func Encrypt(key [chacha20poly1305.KeySize]byte, plaintext []byte) ([]byte, erro
 	}
 	compressed, _ := encoders.GzipBuf(plaintext)
 	plaintext = bytes.NewBuffer(compressed).Bytes()
+	if len(plaintext) > (math.MaxInt - aead.NonceSize() - aead.Overhead()) {
+		return nil, errors.New("plaintext too large")
+	}
 	nonce := make([]byte, aead.NonceSize(), aead.NonceSize()+len(plaintext)+aead.Overhead())
 	if _, err := rand.Read(nonce); err != nil {
 		return nil, err
