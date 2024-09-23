@@ -20,6 +20,7 @@ package httpclient
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"net"
 	"net/http"
 	"net/url"
@@ -38,7 +39,7 @@ import (
 func GoHTTPDriver(origin string, secure bool, opts *HTTPOptions) (HTTPDriver, error) {
 	var transport *http.Transport
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true, // We don't care about the HTTP(S) layer certs
+		InsecureSkipVerify: false, // Enable certificate verification
 	}
 	// {{if .Config.Debug}}
 	if cryptography.TLSKeyLogger != nil {
