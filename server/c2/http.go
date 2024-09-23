@@ -255,20 +255,8 @@ func getHTTPSConfig(req *clientpb.HTTPListenerReq) *tls.Config {
 
 	// Randomize the cipher suites
 	allCipherSuites := []uint16{
-		tls.TLS_RSA_WITH_AES_128_CBC_SHA,                  //uint16 = 0x002f 3
-		tls.TLS_RSA_WITH_AES_256_CBC_SHA,                  //uint16 = 0x0035 4
 		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,         //uint16 = 0x009c 5
 		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,         //uint16 = 0x009d 6
-		tls.TLS_RSA_WITH_AES_128_CBC_SHA256,               //uint16 = 0x003c 5
-		tls.TLS_RSA_WITH_AES_128_GCM_SHA256,               //uint16 = 0x009c 6
-		tls.TLS_RSA_WITH_AES_256_GCM_SHA384,               //uint16 = 0x009d 7
-		tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,          //uint16 = 0xc009 9
-		tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,          //uint16 = 0xc00a 10
-		tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,            //uint16 = 0xc013 13
-		tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,            //uint16 = 0xc014 14
-		tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,       //uint16 = 0xc023 15
-		tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,         //uint16 = 0xc027 16
-		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,         //uint16 = 0xc02f 17
 		tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,       //uint16 = 0xc02b 18
 		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,         //uint16 = 0xc030 19
 		tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,       //uint16 = 0xc02c 20
