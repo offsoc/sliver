@@ -43,11 +43,11 @@ func (e EnglishEncoder) Encode(data []byte) ([]byte, error) {
 	words := []string{}
 	for _, b := range data {
 		possibleWords := dictionary[int(b)]
-		indexBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(possibleWords))))
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(possibleWords))))
 		if err != nil {
 			return nil, err
 		}
-		index := indexBig.Int64()
+		index := int(idx.Int64())
 		words = append(words, possibleWords[index])
 
 		
