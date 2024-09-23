@@ -98,6 +98,9 @@ func unzipBuf(src []byte, dest string) ([]string, error) {
 		defer rc.Close()
 
 		fPath := filepath.Join(dest, file.Name)
+		if !strings.HasPrefix(filepath.Clean(fPath), filepath.Clean(dest) + string(os.PathSeparator)) {
+			return filenames, fmt.Errorf("invalid file path: %s", fPath)
+		}
 		filenames = append(filenames, fPath)
 
 		if file.FileInfo().IsDir() {
