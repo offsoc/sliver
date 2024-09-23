@@ -233,7 +233,7 @@ func mtlsConnect(uri *url.URL) (*Connection, error) {
 		log.Printf("Connecting -> %s", uri.Host)
 		// {{end}}
 		lport, err := strconv.ParseUint(uri.Port(), 10, 16)
-		if err != nil || lport > 65535 {
+		if err != nil  {
 			// {{if .Config.Debug}}
 			log.Printf("Error parsing mtls listen port %s (default to 8888)", err)
 			// {{end}}
