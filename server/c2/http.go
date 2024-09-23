@@ -248,13 +248,14 @@ func getHTTPSConfig(req *clientpb.HTTPListenerReq) *tls.Config {
 		tlsConfig.MinVersion = tls.VersionTLS12
 		fallthrough // For compatibility with winhttp
 	case 2:
-		tlsConfig.MinVersion = tls.VersionTLS12
+		// tlsConfig.MinVersion = tls.VersionTLS12
 	default:
-		tlsConfig.MinVersion = tls.VersionTLS12
+		// tlsConfig.MinVersion = tls.VersionTLS12
 	}
 
 	// Randomize the cipher suites
 	allCipherSuites := []uint16{
+		tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,                 //uint16 = 0x000a 2
 		tls.TLS_RSA_WITH_AES_128_CBC_SHA,                  //uint16 = 0x002f 3
 		tls.TLS_RSA_WITH_AES_256_CBC_SHA,                  //uint16 = 0x0035 4
 		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,         //uint16 = 0x009c 5
