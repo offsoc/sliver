@@ -432,11 +432,16 @@ func chownHandler(data []byte, resp RPCResponse) {
 		goto finished
 	}
 
-	uid, err = strconv.ParseUint(usr.Uid, 10, 32)
+	uid64, err := strconv.ParseUint(usr.Uid, 10, 32)
 	if err != nil {
 		chown.Response.Err = err.Error()
 		goto finished
 	}
+	if uid64 > math.MaxInt32 {
+		chown.Response.Err = "UID value out of range"
+		goto finished
+	}
+	uid = int(uid64)
 
 	gid_str = chownReq.Gid
 	grp, err = user.LookupGroup(gid_str)
@@ -445,11 +450,16 @@ func chownHandler(data []byte, resp RPCResponse) {
 		goto finished
 	}
 
-	gid, err = strconv.ParseUint(grp.Gid, 10, 32)
+	gid64, err := strconv.ParseUint(grp.Gid, 10, 32)
 	if err != nil {
 		chown.Response.Err = err.Error()
 		goto finished
 	}
+	if gid64 > math.MaxInt32 {
+		chown.Response.Err = "GID value out of range"
+		goto finished
+	}
+	gid = int(gid64)
 
 	// Check if the recursive flag is set and the path is a directory
 	if chownReq.Recursive {
