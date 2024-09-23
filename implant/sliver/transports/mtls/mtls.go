@@ -172,7 +172,6 @@ func getTLSConfig() *tls.Config {
 	tlsConfig := &tls.Config{
 		Certificates:       []tls.Certificate{certPEM},
 		RootCAs:            caCertPool,
-		InsecureSkipVerify: true, // Don't worry I sorta know what I'm doing
 		VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 			return cryptography.RootOnlyVerifyCertificate(caCertPEM, rawCerts, verifiedChains)
 		},
