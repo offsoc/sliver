@@ -707,7 +707,7 @@ func getExtArgs(_ *cobra.Command, args []string, _ string, ext *ExtCommand) ([]b
 				return nil, err
 			}
 		case "short":
-			val, err := strconv.Atoi(word)
+			val, err := strconv.ParseUint(word, 10, 16)
 			if err != nil {
 				return nil, err
 			}
