@@ -371,8 +371,19 @@ func untarSkipTopLevel(dst string, r io.Reader) error {
 			continue
 		}
 
+		// Check for ".." in the header name to prevent directory traversal
+		if strings.Contains(header.Name, "..") {
+			continue
+		}
+
 		// the target location where the dir/file should be created
 		target := filepath.Join(dst, strings.TrimPrefix(header.Name, topLevel.Name))
+
+		// Ensure the target path is within the destination directory
+		relPath, err := filepath.Rel(dst, target)
+		if err != nil || strings.HasPrefix(relPath, "..") {
+			continue
+		}
 
 		// the following switch could also be done using fi.Mode(), not sure if there
 		// a benefit of using one vs. the other.
