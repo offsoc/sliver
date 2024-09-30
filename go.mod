@@ -34,7 +34,7 @@ require (
 	github.com/miekg/dns v1.1.62
 	github.com/moloch--/asciicast v0.1.0
 	github.com/moloch--/memmod v0.0.0-20230225130813-fd77d905589e
-	github.com/ncruces/go-sqlite3 v0.18.3
+	github.com/ncruces/go-sqlite3 v0.18.4
 	github.com/reeflective/console v0.1.15
 	github.com/reeflective/readline v1.0.15
 	github.com/rsteube/carapace v0.46.3-0.20231214181515-27e49f3c3b69
