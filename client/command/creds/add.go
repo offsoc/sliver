@@ -21,6 +21,7 @@ package creds
 import (
 	"bufio"
 	"context"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -128,9 +129,12 @@ func CredsAddHashFileCmd(cmd *cobra.Command, con *console.SliverClient, args []s
 }
 
 func parseHashType(raw string) clientpb.HashType {
-	hashInt, err := strconv.Atoi(raw)
+	hashInt64, err := strconv.ParseInt(raw, 10, 32)
 	if err == nil {
-		return clientpb.HashType(hashInt)
+		hashInt := int32(hashInt64)
+		if hashInt64 >= math.MinInt32 && hashInt64 <= math.MaxInt32 {
+			return clientpb.HashType(hashInt)
+		}
 	}
 	return clientpb.HashType_INVALID
 }

@@ -49,7 +49,7 @@ require (
 	github.com/yiya1989/sshkrb5 v0.0.1
 	golang.org/x/crypto v0.27.0
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
-	golang.org/x/net v0.27.0
+	golang.org/x/net v0.29.0
 	golang.org/x/sys v0.25.0
 	golang.org/x/term v0.24.0
 	golang.org/x/text v0.18.0
@@ -61,7 +61,7 @@ require (
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/driver/sqlite v1.5.5
-	gorm.io/gorm v1.25.10
+	gorm.io/gorm v1.25.12
 	gvisor.dev/gvisor v0.0.0-20240306221502-ee1e1f6070e3
 	modernc.org/sqlite v1.30.1
 	tailscale.com v1.66.4

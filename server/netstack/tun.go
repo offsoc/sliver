@@ -976,7 +976,7 @@ func (tnet *Net) DialContext(ctx context.Context, network, address string) (net.
 		acceptV6 = !acceptV4
 	}
 	var host string
-	var port int
+	var port uint64
 	if matches[1] == "ping" {
 		host = address
 	} else {
@@ -986,8 +986,8 @@ func (tnet *Net) DialContext(ctx context.Context, network, address string) (net.
 		if err != nil {
 			return nil, &net.OpError{Op: "dial", Err: err}
 		}
-		port, err = strconv.Atoi(sport)
-		if err != nil || port < 0 || port > 65535 {
+		port, err = strconv.ParseUint(sport, 10, 16)
+		if err != nil {
 			return nil, &net.OpError{Op: "dial", Err: errNumericPort}
 		}
 	}
