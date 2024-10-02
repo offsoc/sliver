@@ -7,7 +7,7 @@ toolchain go1.22.2
 replace github.com/rsteube/carapace v0.36.3 => github.com/reeflective/carapace v0.46.3-0.20231214181515-27e49f3c3b69
 
 require (
-	filippo.io/age v1.1.1
+	filippo.io/age v1.2.0
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Binject/binjection v0.0.0-20210701074423-605d46e35deb
 	github.com/Binject/debug v0.0.0-20230508195519-26db73212a7a
