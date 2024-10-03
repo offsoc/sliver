@@ -187,7 +187,7 @@ func mtlsBeacon(uri *url.URL) *Beacon {
 	// {{end}}
 	var err error
 	lport, err := strconv.Atoi(uri.Port())
-	if err != nil {
+	if err != nil || lport < 0 || lport > 65535 {
 		lport = 8888
 	}
 
