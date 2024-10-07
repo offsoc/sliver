@@ -115,11 +115,19 @@ func parseMap(mapLine string) *MemoryRegion {
 			// Something is wrong with this region, discard this record
 			return nil
 		}
+		if regionStart > math.MaxInt64 {
+			// Region start is out of bounds for int64
+			return nil
+		}
 		memRegion.start = regionStart
 
 		regionEnd, err := strconv.ParseUint(regionInformation[2], 16, 64)
 		if err != nil {
 			// Something is wrong with this region, discard this record
+			return nil
+		}
+		if regionEnd > math.MaxInt64 {
+			// Region end is out of bounds for int64
 			return nil
 		}
 		
