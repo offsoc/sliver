@@ -202,7 +202,7 @@ func (p *ChannelProxy) HostPort() (string, uint32) {
 		// {{end}}
 		return "", defaultPort
 	}
-	portNumber, err := strconv.Atoi(rawPort)
+	portNumber, err := strconv.ParseUint(rawPort, 10, 32)
 	if err != nil {
 		// {{if .Config.Debug}}
 		log.Printf("Failed to parse number from %s", rawPort)
