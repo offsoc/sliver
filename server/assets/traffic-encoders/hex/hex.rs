@@ -1,9 +1,8 @@
 extern crate alloc;
 extern crate core;
 extern crate hex;
-extern crate wee_alloc;
 
-use std::alloc::{alloc, dealloc, Layout};
+use std::alloc::{alloc, dealloc, Layout, System};
 use std::slice;
 
 fn encode(input: &[u8]) -> Vec<u8> {
@@ -115,4 +114,4 @@ pub unsafe extern "C" fn _deallocate(ptr: u32, size: u32) {
 }
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static GLOBAL: System = System;
