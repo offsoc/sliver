@@ -30,7 +30,7 @@ require (
 	github.com/lesnuages/snitch v0.6.0
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/miekg/dns v1.1.63
-	github.com/moloch--/asciicast v0.1.0
+	github.com/moloch--/asciicast v0.1.1
 	github.com/moloch--/memmod v0.0.0-20230225130813-fd77d905589e
 	github.com/ncruces/go-sqlite3 v0.23.3
 	github.com/reeflective/console v0.1.15
