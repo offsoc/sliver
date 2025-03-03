@@ -104,7 +104,7 @@ func modifyURL(ctx context.Context, urlstr string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", err
 	}
@@ -119,7 +119,7 @@ func modifyURL(ctx context.Context, urlstr string) (string, error) {
 	return wsURL, nil
 }
 
-func runListeners(list []cancelableListener, ev interface{}) []cancelableListener {
+func runListeners(list []cancelableListener, ev any) []cancelableListener {
 	for i := 0; i < len(list); {
 		listener := list[i]
 		select {
@@ -354,6 +354,11 @@ func distributedNodesUpdated(nodes []*cdp.BackendNode) nodeOp {
 		defer n.Unlock()
 
 		n.DistributedNodes = nodes
+	}
+}
+
+func scrollableFlagUpdated(m map[cdp.NodeID]*cdp.Node, id cdp.NodeID) nodeOp {
+	return func(n *cdp.Node) {
 	}
 }
 
