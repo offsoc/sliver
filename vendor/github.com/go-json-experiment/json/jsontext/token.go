@@ -5,6 +5,8 @@
 package jsontext
 
 import (
+	"bytes"
+	"errors"
 	"math"
 	"strconv"
 
@@ -20,8 +22,10 @@ const (
 	maxUint64 = math.MaxUint64
 	minUint64 = 0 // for consistency and readability purposes
 
-	invalidTokenPanic = "invalid json.Token; it has been voided by a subsequent json.Decoder call"
+	invalidTokenPanic = "invalid jsontext.Token; it has been voided by a subsequent json.Decoder call"
 )
+
+var errInvalidToken = errors.New("invalid jsontext.Token")
 
 // Token represents a lexical JSON token, which may be one of the following:
 //   - a JSON literal (i.e., null, true, or false)
@@ -186,8 +190,7 @@ func (t Token) Clone() Token {
 		if uint64(raw.previousOffsetStart()) != t.num {
 			panic(invalidTokenPanic)
 		}
-		// TODO(https://go.dev/issue/45038): Use bytes.Clone.
-		buf := append([]byte(nil), raw.PreviousBuffer()...)
+		buf := bytes.Clone(raw.previousBuffer())
 		return Token{raw: &decodeBuffer{buf: buf, prevStart: 0, prevEnd: len(buf)}}
 	}
 	return t
@@ -211,7 +214,7 @@ func (t Token) Bool() bool {
 func (t Token) appendString(dst []byte, flags *jsonflags.Flags) ([]byte, error) {
 	if raw := t.raw; raw != nil {
 		// Handle raw string value.
-		buf := raw.PreviousBuffer()
+		buf := raw.previousBuffer()
 		if Kind(buf[0]) == '"' {
 			if jsonwire.ConsumeSimpleString(buf) == len(buf) {
 				return append(dst, buf...), nil
@@ -245,7 +248,7 @@ func (t Token) string() (string, []byte) {
 		if uint64(raw.previousOffsetStart()) != t.num {
 			panic(invalidTokenPanic)
 		}
-		buf := raw.PreviousBuffer()
+		buf := raw.previousBuffer()
 		if buf[0] == '"' {
 			// TODO: Preserve ValueFlags in Token?
 			isVerbatim := jsonwire.ConsumeSimpleString(buf) == len(buf)
@@ -268,20 +271,17 @@ func (t Token) string() (string, []byte) {
 			return strconv.FormatUint(uint64(t.num), 10), nil
 		}
 	}
-	return "<invalid json.Token>", nil
+	return "<invalid jsontext.Token>", nil
 }
 
 // appendNumber appends a JSON number to dst and returns it.
 // It panics if t is not a JSON number.
-func (t Token) appendNumber(dst []byte, canonicalize bool) ([]byte, error) {
+func (t Token) appendNumber(dst []byte, flags *jsonflags.Flags) ([]byte, error) {
 	if raw := t.raw; raw != nil {
 		// Handle raw number value.
-		buf := raw.PreviousBuffer()
+		buf := raw.previousBuffer()
 		if Kind(buf[0]).normalize() == '0' {
-			if !canonicalize {
-				return append(dst, buf...), nil
-			}
-			dst, _, err := jsonwire.ReformatNumber(dst, buf, canonicalize)
+			dst, _, err := jsonwire.ReformatNumber(dst, buf, flags)
 			return dst, err
 		}
 	} else if t.num != 0 {
@@ -309,7 +309,7 @@ func (t Token) Float() float64 {
 		if uint64(raw.previousOffsetStart()) != t.num {
 			panic(invalidTokenPanic)
 		}
-		buf := raw.PreviousBuffer()
+		buf := raw.previousBuffer()
 		if Kind(buf[0]).normalize() == '0' {
 			fv, _ := jsonwire.ParseFloat(buf, 64)
 			return fv
@@ -353,7 +353,7 @@ func (t Token) Int() int64 {
 			panic(invalidTokenPanic)
 		}
 		neg := false
-		buf := raw.PreviousBuffer()
+		buf := raw.previousBuffer()
 		if len(buf) > 0 && buf[0] == '-' {
 			neg, buf = true, buf[1:]
 		}
@@ -414,7 +414,7 @@ func (t Token) Uint() uint64 {
 			panic(invalidTokenPanic)
 		}
 		neg := false
-		buf := raw.PreviousBuffer()
+		buf := raw.previousBuffer()
 		if len(buf) > 0 && buf[0] == '-' {
 			neg, buf = true, buf[1:]
 		}
@@ -512,7 +512,7 @@ func (k Kind) String() string {
 	case ']':
 		return "]"
 	default:
-		return "<invalid json.Kind: " + jsonwire.QuoteRune(string(k)) + ">"
+		return "<invalid jsontext.Kind: " + jsonwire.QuoteRune(string(k)) + ">"
 	}
 }
 

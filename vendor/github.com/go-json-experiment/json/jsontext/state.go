@@ -5,21 +5,45 @@
 package jsontext
 
 import (
+	"errors"
+	"iter"
 	"math"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/go-json-experiment/json/internal/jsonwire"
 )
 
 var (
-	errMissingName   = &SyntacticError{str: "missing string for object name"}
-	errMissingColon  = &SyntacticError{str: "missing character ':' after object name"}
-	errMissingValue  = &SyntacticError{str: "missing value after object name"}
-	errMissingComma  = &SyntacticError{str: "missing character ',' after object or array value"}
-	errMismatchDelim = &SyntacticError{str: "mismatching structural token for object or array"}
-	errMaxDepth      = &SyntacticError{str: "exceeded max depth"}
+	// ErrDuplicateName indicates that a JSON token could not be
+	// encoded or decoded because it results in a duplicate JSON object name.
+	// This error is directly wrapped within a [SyntacticError] when produced.
+	//
+	// The name of a duplicate JSON object member can be extracted as:
+	//
+	//	err := ...
+	//	var serr jsontext.SyntacticError
+	//	if errors.As(err, &serr) && serr.Err == jsontext.ErrDuplicateName {
+	//		ptr := serr.JSONPointer // JSON pointer to duplicate name
+	//		name := ptr.LastToken() // duplicate name itself
+	//		...
+	//	}
+	//
+	// This error is only returned if [AllowDuplicateNames] is false.
+	ErrDuplicateName = errors.New("duplicate object member name")
 
-	errInvalidNamespace = &SyntacticError{str: "object namespace is in an invalid state"}
+	// ErrNonStringName indicates that a JSON token could not be
+	// encoded or decoded because it is not a string,
+	// as required for JSON object names according to RFC 8259, section 4.
+	// This error is directly wrapped within a [SyntacticError] when produced.
+	ErrNonStringName = errors.New("object member name must be a string")
+
+	errMissingValue  = errors.New("missing value after object name")
+	errMismatchDelim = errors.New("mismatching structural token for object or array")
+	errMaxDepth      = errors.New("exceeded max depth")
+
+	errInvalidNamespace = errors.New("object namespace is in an invalid state")
 )
 
 // Per RFC 8259, section 9, implementations may enforce a maximum depth.
@@ -31,7 +55,6 @@ type state struct {
 	Tokens stateMachine
 
 	// Names is a stack of object names.
-	// Not used if AllowDuplicateNames is true.
 	Names objectNameStack
 
 	// Namespaces is a stack of object namespaces.
@@ -42,48 +65,151 @@ type state struct {
 	Namespaces objectNamespaceStack
 }
 
+// needObjectValue reports whether the next token should be an object value.
+// This method is used by [wrapSyntacticError].
+func (s *state) needObjectValue() bool {
+	return s.Tokens.Last.needObjectValue()
+}
+
 func (s *state) reset() {
 	s.Tokens.reset()
 	s.Names.reset()
 	s.Namespaces.reset()
 }
 
+// Pointer is a JSON Pointer (RFC 6901) that references a particular JSON value
+// relative to the root of the top-level JSON value.
+//
+// A Pointer is a slash-separated list of tokens, where each token is
+// either a JSON object name or an index to a JSON array element
+// encoded as a base-10 integer value.
+// It is impossible to distinguish between an array index and an object name
+// (that happens to be an base-10 encoded integer) without also knowing
+// the structure of the top-level JSON value that the pointer refers to.
+//
+// There is exactly one representation of a pointer to a particular value,
+// so comparability of Pointer values is equivalent to checking whether
+// they both point to the exact same value.
+type Pointer string
+
+// IsValid reports whether p is a valid JSON Pointer according to RFC 6901.
+// Note that the concatenation of two valid pointers produces a valid pointer.
+func (p Pointer) IsValid() bool {
+	for i, r := range p {
+		switch {
+		case r == '~' && (i+1 == len(p) || (p[i+1] != '0' && p[i+1] != '1')):
+			return false // invalid escape
+		case r == '\ufffd' && !strings.HasPrefix(string(p[i:]), "\ufffd"):
+			return false // invalid UTF-8
+		}
+	}
+	return len(p) == 0 || p[0] == '/'
+}
+
+// Contains reports whether the JSON value that p points to
+// is equal to or contains the JSON value that pc points to.
+func (p Pointer) Contains(pc Pointer) bool {
+	// Invariant: len(p) <= len(pc) if p.Contains(pc)
+	suffix, ok := strings.CutPrefix(string(pc), string(p))
+	return ok && (suffix == "" || suffix[0] == '/')
+}
+
+// Parent strips off the last token and returns the remaining pointer.
+// The parent of an empty p is an empty string.
+func (p Pointer) Parent() Pointer {
+	return p[:max(strings.LastIndexByte(string(p), '/'), 0)]
+}
+
+// LastToken returns the last token in the pointer.
+// The last token of an empty p is an empty string.
+func (p Pointer) LastToken() string {
+	last := p[max(strings.LastIndexByte(string(p), '/'), 0):]
+	return unescapePointerToken(strings.TrimPrefix(string(last), "/"))
+}
+
+// AppendToken appends a token to the end of p and returns the full pointer.
+func (p Pointer) AppendToken(tok string) Pointer {
+	return Pointer(appendEscapePointerName([]byte(p+"/"), tok))
+}
+
+// TODO: Add Pointer.AppendTokens,
+// but should this take in a ...string or an iter.Seq[string]?
+
+// Tokens returns an iterator over the reference tokens in the JSON pointer,
+// starting from the first token until the last token (unless stopped early).
+func (p Pointer) Tokens() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for len(p) > 0 {
+			p = Pointer(strings.TrimPrefix(string(p), "/"))
+			i := min(uint(strings.IndexByte(string(p), '/')), uint(len(p)))
+			if !yield(unescapePointerToken(string(p)[:i])) {
+				return
+			}
+			p = p[i:]
+		}
+	}
+}
+
+func unescapePointerToken(token string) string {
+	if strings.Contains(token, "~") {
+		// Per RFC 6901, section 3, unescape '~' and '/' characters.
+		token = strings.ReplaceAll(token, "~1", "/")
+		token = strings.ReplaceAll(token, "~0", "~")
+	}
+	return token
+}
+
 // appendStackPointer appends a JSON Pointer (RFC 6901) to the current value.
-// The returned pointer is only accurate if s.names is populated,
-// otherwise it uses the numeric index as the object member name.
+//
+//   - If where is -1, then it points to the previously processed token.
+//
+//   - If where is 0, then it points to the parent JSON object or array,
+//     or an object member if in-between an object member key and value.
+//     This is useful when the position is ambiguous whether
+//     we are interested in the previous or next token, or
+//     when we are uncertain whether the next token
+//     continues or terminates the current object or array.
+//
+//   - If where is +1, then it points to the next expected value,
+//     assuming that it continues the current JSON object or array.
+//     As a special case, if the next token is a JSON object name,
+//     then it points to the parent JSON object.
 //
 // Invariant: Must call s.names.copyQuotedBuffer beforehand.
-func (s state) appendStackPointer(b []byte) []byte {
+func (s state) appendStackPointer(b []byte, where int) []byte {
 	var objectDepth int
 	for i := 1; i < s.Tokens.Depth(); i++ {
 		e := s.Tokens.index(i)
-		if e.Length() == 0 {
-			break // empty object or array
+		arrayDelta := -1 // by default point to previous array element
+		if isLast := i == s.Tokens.Depth()-1; isLast {
+			switch {
+			case where < 0 && e.Length() == 0 || where == 0 && !e.needObjectValue() || where > 0 && e.NeedObjectName():
+				return b
+			case where > 0 && e.isArray():
+				arrayDelta = 0 // point to next array element
+			}
 		}
-		b = append(b, '/')
 		switch {
 		case e.isObject():
-			if objectDepth < s.Names.length() {
-				for _, c := range s.Names.getUnquoted(objectDepth) {
-					// Per RFC 6901, section 3, escape '~' and '/' characters.
-					switch c {
-					case '~':
-						b = append(b, "~0"...)
-					case '/':
-						b = append(b, "~1"...)
-					default:
-						b = append(b, c)
-					}
-				}
-			} else {
-				// Since the names stack is unpopulated, the name is unknown.
-				// As a best-effort replacement, use the numeric member index.
-				// While inaccurate, it produces a syntactically valid pointer.
-				b = strconv.AppendUint(b, uint64((e.Length()-1)/2), 10)
-			}
+			b = appendEscapePointerName(append(b, '/'), s.Names.getUnquoted(objectDepth))
 			objectDepth++
 		case e.isArray():
-			b = strconv.AppendUint(b, uint64(e.Length()-1), 10)
+			b = strconv.AppendUint(append(b, '/'), uint64(e.Length()+int64(arrayDelta)), 10)
+		}
+	}
+	return b
+}
+
+func appendEscapePointerName[Bytes ~[]byte | ~string](b []byte, name Bytes) []byte {
+	for _, r := range string(name) {
+		// Per RFC 6901, section 3, escape '~' and '/' characters.
+		switch r {
+		case '~':
+			b = append(b, "~0"...)
+		case '/':
+			b = append(b, "~1"...)
+		default:
+			b = utf8.AppendRune(b, r)
 		}
 	}
 	return b
@@ -133,7 +259,7 @@ func (m *stateMachine) index(i int) *stateEntry {
 
 // DepthLength reports the current nested depth and
 // the length of the last JSON object or array.
-func (m stateMachine) DepthLength() (int, int) {
+func (m stateMachine) DepthLength() (int, int64) {
 	return m.Depth(), m.Last.Length()
 }
 
@@ -142,7 +268,7 @@ func (m stateMachine) DepthLength() (int, int) {
 func (m *stateMachine) appendLiteral() error {
 	switch {
 	case m.Last.NeedObjectName():
-		return errMissingName
+		return ErrNonStringName
 	case !m.Last.isValidNamespace():
 		return errInvalidNamespace
 	default:
@@ -174,7 +300,7 @@ func (m *stateMachine) appendNumber() error {
 func (m *stateMachine) pushObject() error {
 	switch {
 	case m.Last.NeedObjectName():
-		return errMissingName
+		return ErrNonStringName
 	case !m.Last.isValidNamespace():
 		return errInvalidNamespace
 	case len(m.Stack) == maxNestingDepth:
@@ -209,7 +335,7 @@ func (m *stateMachine) popObject() error {
 func (m *stateMachine) pushArray() error {
 	switch {
 	case m.Last.NeedObjectName():
-		return errMissingName
+		return ErrNonStringName
 	case !m.Last.isValidNamespace():
 		return errInvalidNamespace
 	case len(m.Stack) == maxNestingDepth:
@@ -283,21 +409,6 @@ func (m stateMachine) needDelim(next Kind) (delim byte) {
 	}
 }
 
-// checkDelim reports whether the specified delimiter should be there given
-// the kind of the next token that appears immediately afterwards.
-func (m stateMachine) checkDelim(delim byte, next Kind) error {
-	switch needDelim := m.needDelim(next); {
-	case needDelim == delim:
-		return nil
-	case needDelim == ':':
-		return errMissingColon
-	case needDelim == ',':
-		return errMissingComma
-	default:
-		return newInvalidCharacterError([]byte{delim}, "before next token")
-	}
-}
-
 // InvalidateDisabledNamespaces marks all disabled namespaces as invalid.
 //
 // For efficiency, Marshal and Unmarshal may disable namespaces since there are
@@ -306,7 +417,7 @@ func (m stateMachine) checkDelim(delim byte, next Kind) error {
 // Mark the namespaces as invalid so that future method calls on
 // Encoder or Decoder will return an error.
 func (m *stateMachine) InvalidateDisabledNamespaces() {
-	for i := 0; i < m.Depth(); i++ {
+	for i := range m.Depth() {
 		e := m.index(i)
 		if !e.isActiveNamespace() {
 			e.invalidateNamespace()
@@ -342,8 +453,8 @@ const (
 
 // Length reports the number of elements in the JSON object or array.
 // Each name and value in an object entry is treated as a separate element.
-func (e stateEntry) Length() int {
-	return int(e & stateCountMask)
+func (e stateEntry) Length() int64 {
+	return int64(e & stateCountMask)
 }
 
 // isObject reports whether this is a JSON object.
@@ -453,7 +564,7 @@ func (ns *objectNameStack) length() int {
 	return len(ns.offsets)
 }
 
-// getUnquoted retrieves the ith unquoted name in the namespace.
+// getUnquoted retrieves the ith unquoted name in the stack.
 // It returns an empty string if the last object is empty.
 //
 // Invariant: Must call copyQuotedBuffer beforehand.
