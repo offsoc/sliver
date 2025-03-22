@@ -19,6 +19,7 @@ package cursed
 */
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -52,7 +53,7 @@ func CursedCookiesCmd(cmd *cobra.Command, con *console.SliverClient, args []stri
 	}
 	jsonCookies := []string{}
 	for _, cookie := range cookies {
-		jsonCookie, err := cookie.MarshalJSON()
+		jsonCookie, err := json.Marshal(cookie) // Assuming json.Marshal is the correct method
 		if err != nil {
 			con.PrintErrorf("Failed to marshal cookie: %s\n", err)
 			continue

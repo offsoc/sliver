@@ -20,9 +20,9 @@ set -e
 
 # Creates the static go asset archives
 
-GO_VER="1.24.0"
+GO_VER="1.24.1"
 GARBLE_VER="1.23.5"
-ZIG_VER="0.14.0"
+ZIG_VER="0.15.0"
 SGN_VER="0.0.3"
 
 BLOAT_FILES="AUTHORS CONTRIBUTORS PATENTS VERSION favicon.ico robots.txt SECURITY.md CONTRIBUTING.md LICENSE README.md ./doc ./test ./api ./misc"
@@ -152,17 +152,17 @@ rm -f windows-go.zip go$GO_VER.windows-amd64.zip
 echo "-----------------------------------------------------------------"
 echo " Zig"
 echo "-----------------------------------------------------------------"
-echo "curl -L --fail --output $OUTPUT_DIR/darwin/amd64/zig https://ziglang.org/builds/zig-macos-x86_64-$ZIG_VER-dev.3066+1a1389c51.tar.xz"
-curl -L --fail --output $OUTPUT_DIR/darwin/amd64/zig.tar.xz https://ziglang.org/builds/zig-macos-x86_64-$ZIG_VER-dev.3066+1a1389c51.tar.xz                                                
-echo "curl -L --fail --output $OUTPUT_DIR/darwin/arm64/zig https://ziglang.org/builds/zig-macos-aarch64-$ZIG_VER-dev.3066+1a1389c51.tar.xz"
-curl -L --fail --output $OUTPUT_DIR/darwin/arm64/zig.tar.xz https://ziglang.org/builds/zig-macos-aarch64-$ZIG_VER-dev.3066+1a1389c51.tar.xz
-echo "curl -L --fail --output $OUTPUT_DIR/linux/amd64/zig https://ziglang.org/builds/zig-linux-x86_64-$ZIG_VER-dev.3066+1a1389c51.tar.xz"
-curl -L --fail --output $OUTPUT_DIR/linux/amd64/zig.tar.xz https://ziglang.org/builds/zig-linux-x86_64-$ZIG_VER-dev.3066+1a1389c51.tar.xz
-echo "curl -L --fail --output $OUTPUT_DIR/linux/arm64/zig https://ziglang.org/builds/zig-linux-aarch64-$ZIG_VER-dev.3066+1a1389c51.tar.xz"
-curl -L --fail --output $OUTPUT_DIR/linux/arm64/zig.tar.xz https://ziglang.org/builds/zig-linux-aarch64-$ZIG_VER-dev.3066+1a1389c51.tar.xz
+echo "curl -L --fail --output $OUTPUT_DIR/darwin/amd64/zig https://ziglang.org/builds/zig-macos-x86_64-$ZIG_VER-dev.77+aa8aa6625.tar.xz"
+curl -L --fail --output $OUTPUT_DIR/darwin/amd64/zig.tar.xz https://ziglang.org/builds/zig-macos-x86_64-$ZIG_VER-dev.77+aa8aa6625.tar.xz
+echo "curl -L --fail --output $OUTPUT_DIR/darwin/arm64/zig https://ziglang.org/builds/zig-macos-aarch64-$ZIG_VER-dev.77+aa8aa6625.tar.xz"
+curl -L --fail --output $OUTPUT_DIR/darwin/arm64/zig.tar.xz https://ziglang.org/builds/zig-macos-aarch64-$ZIG_VER-dev.77+aa8aa6625.tar.xz
+echo "curl -L --fail --output $OUTPUT_DIR/linux/amd64/zig https://ziglang.org/builds/zig-linux-x86_64-$ZIG_VER-dev.77+aa8aa6625.tar.xz"
+curl -L --fail --output $OUTPUT_DIR/linux/amd64/zig.tar.xz https://ziglang.org/builds/zig-linux-x86_64-$ZIG_VER-dev.77+aa8aa6625.tar.xz
+echo "curl -L --fail --output $OUTPUT_DIR/linux/arm64/zig https://ziglang.org/builds/zig-linux-aarch64-$ZIG_VER-dev.77+aa8aa6625.tar.xz"
+curl -L --fail --output $OUTPUT_DIR/linux/arm64/zig.tar.xz https://ziglang.org/builds/zig-linux-aarch64-$ZIG_VER-dev.77+aa8aa6625.tar.xz
 # Of course Windows has to be different, because it's awful (zip file instead of a tarball)
-echo "curl -L --fail --output $OUTPUT_DIR/windows/amd64/zig.zip https://ziglang.org/builds/zig-windows-x86_64-$ZIG_VER-dev.3066+1a1389c51.zip"
-curl -L --fail --output $OUTPUT_DIR/windows/amd64/zig.zip https://ziglang.org/builds/zig-windows-x86_64-$ZIG_VER-dev.3066+1a1389c51.zip
+echo "curl -L --fail --output $OUTPUT_DIR/windows/amd64/zig.zip https://ziglang.org/builds/zig-windows-x86_64-$ZIG_VER-dev.77+aa8aa6625.zip"
+curl -L --fail --output $OUTPUT_DIR/windows/amd64/zig.zip https://ziglang.org/builds/zig-windows-x86_64-$ZIG_VER-dev.77+aa8aa6625.zip
 
 
 echo "-----------------------------------------------------------------"
