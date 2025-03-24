@@ -53,7 +53,7 @@ require (
 	golang.org/x/text v0.23.0
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.5
 	gopkg.in/AlecAivazis/survey.v1 v1.8.8
 	gorm.io/driver/mysql v1.5.7
@@ -66,7 +66,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.5.2 // indirect
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Binject/shellcode v0.0.0-20191101084904-a8a90e7d4563 // indirect
 	github.com/BurntSushi/xgb v0.0.0-20201008132610-5f9e7b3c49cd // indirect
@@ -176,7 +176,7 @@ require (
 	golang.org/x/tools v0.30.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
