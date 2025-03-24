@@ -14,8 +14,8 @@ require (
 	github.com/Ne0nd0g/go-clr v1.0.3
 	github.com/alecthomas/chroma v0.10.0
 	github.com/cheggaaa/pb/v3 v3.1.7
-	github.com/chromedp/cdproto v0.0.0-20250222051814-50c6cb17f10a
-	github.com/chromedp/chromedp v0.13.1
+	github.com/chromedp/cdproto v0.0.0-20250319231242-a755498943c8
+	github.com/chromedp/chromedp v0.13.3
 	github.com/fatih/color v1.18.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/gofrs/uuid v4.4.0+incompatible

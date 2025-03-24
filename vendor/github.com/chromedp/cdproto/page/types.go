@@ -22,7 +22,7 @@ type AdScriptID struct {
 
 // PermissionsPolicyFeature all Permissions Policy features. This enum should
 // match the one defined in
-// third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5.
+// services/network/public/cpp/permissions_policy/permissions_policy_features.json5.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-PermissionsPolicyFeature
 type PermissionsPolicyFeature string
@@ -1149,6 +1149,7 @@ const (
 	BackForwardCacheNotRestoredReasonRequestedByWebViewClient                                 BackForwardCacheNotRestoredReason = "RequestedByWebViewClient"
 	BackForwardCacheNotRestoredReasonPostMessageByWebViewClient                               BackForwardCacheNotRestoredReason = "PostMessageByWebViewClient"
 	BackForwardCacheNotRestoredReasonCacheControlNoStoreDeviceBoundSessionTerminated          BackForwardCacheNotRestoredReason = "CacheControlNoStoreDeviceBoundSessionTerminated"
+	BackForwardCacheNotRestoredReasonCacheLimitPruned                                         BackForwardCacheNotRestoredReason = "CacheLimitPruned"
 )
 
 // UnmarshalJSON satisfies [json.Unmarshaler].
@@ -1437,6 +1438,8 @@ func (t *BackForwardCacheNotRestoredReason) UnmarshalJSON(buf []byte) error {
 		*t = BackForwardCacheNotRestoredReasonPostMessageByWebViewClient
 	case BackForwardCacheNotRestoredReasonCacheControlNoStoreDeviceBoundSessionTerminated:
 		*t = BackForwardCacheNotRestoredReasonCacheControlNoStoreDeviceBoundSessionTerminated
+	case BackForwardCacheNotRestoredReasonCacheLimitPruned:
+		*t = BackForwardCacheNotRestoredReasonCacheLimitPruned
 	default:
 		return fmt.Errorf("unknown BackForwardCacheNotRestoredReason value: %v", s)
 	}

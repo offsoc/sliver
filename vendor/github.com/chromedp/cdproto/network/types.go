@@ -636,6 +636,7 @@ const (
 	CorsErrorPreflightMissingPrivateNetworkAccessName  CorsError = "PreflightMissingPrivateNetworkAccessName"
 	CorsErrorPrivateNetworkAccessPermissionUnavailable CorsError = "PrivateNetworkAccessPermissionUnavailable"
 	CorsErrorPrivateNetworkAccessPermissionDenied      CorsError = "PrivateNetworkAccessPermissionDenied"
+	CorsErrorLocalNetworkAccessPermissionDenied        CorsError = "LocalNetworkAccessPermissionDenied"
 )
 
 // UnmarshalJSON satisfies [json.Unmarshaler].
@@ -712,6 +713,8 @@ func (t *CorsError) UnmarshalJSON(buf []byte) error {
 		*t = CorsErrorPrivateNetworkAccessPermissionUnavailable
 	case CorsErrorPrivateNetworkAccessPermissionDenied:
 		*t = CorsErrorPrivateNetworkAccessPermissionDenied
+	case CorsErrorLocalNetworkAccessPermissionDenied:
+		*t = CorsErrorLocalNetworkAccessPermissionDenied
 	default:
 		return fmt.Errorf("unknown CorsError value: %v", s)
 	}
@@ -1518,6 +1521,49 @@ func (t *ContentEncoding) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
+// DirectSocketDNSQueryType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-DirectSocketDnsQueryType
+type DirectSocketDNSQueryType string
+
+// String returns the DirectSocketDNSQueryType as string value.
+func (t DirectSocketDNSQueryType) String() string {
+	return string(t)
+}
+
+// DirectSocketDNSQueryType values.
+const (
+	DirectSocketDNSQueryTypeIpv4 DirectSocketDNSQueryType = "ipv4"
+	DirectSocketDNSQueryTypeIpv6 DirectSocketDNSQueryType = "ipv6"
+)
+
+// UnmarshalJSON satisfies [json.Unmarshaler].
+func (t *DirectSocketDNSQueryType) UnmarshalJSON(buf []byte) error {
+	s := string(buf)
+	s = strings.TrimSuffix(strings.TrimPrefix(s, `"`), `"`)
+
+	switch DirectSocketDNSQueryType(s) {
+	case DirectSocketDNSQueryTypeIpv4:
+		*t = DirectSocketDNSQueryTypeIpv4
+	case DirectSocketDNSQueryTypeIpv6:
+		*t = DirectSocketDNSQueryTypeIpv6
+	default:
+		return fmt.Errorf("unknown DirectSocketDNSQueryType value: %v", s)
+	}
+	return nil
+}
+
+// DirectTCPSocketOptions [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-DirectTCPSocketOptions
+type DirectTCPSocketOptions struct {
+	NoDelay           bool                     `json:"noDelay"`                              // TCP_NODELAY option
+	KeepAliveDelay    float64                  `json:"keepAliveDelay,omitempty,omitzero"`    // Expected to be unsigned integer.
+	SendBufferSize    float64                  `json:"sendBufferSize,omitempty,omitzero"`    // Expected to be unsigned integer.
+	ReceiveBufferSize float64                  `json:"receiveBufferSize,omitempty,omitzero"` // Expected to be unsigned integer.
+	DNSQueryType      DirectSocketDNSQueryType `json:"dnsQueryType,omitempty,omitzero"`
+}
+
 // PrivateNetworkRequestPolicy [no description].
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-PrivateNetworkRequestPolicy
@@ -1535,6 +1581,8 @@ const (
 	PrivateNetworkRequestPolicyWarnFromInsecureToMorePrivate  PrivateNetworkRequestPolicy = "WarnFromInsecureToMorePrivate"
 	PrivateNetworkRequestPolicyPreflightBlock                 PrivateNetworkRequestPolicy = "PreflightBlock"
 	PrivateNetworkRequestPolicyPreflightWarn                  PrivateNetworkRequestPolicy = "PreflightWarn"
+	PrivateNetworkRequestPolicyPermissionBlock                PrivateNetworkRequestPolicy = "PermissionBlock"
+	PrivateNetworkRequestPolicyPermissionWarn                 PrivateNetworkRequestPolicy = "PermissionWarn"
 )
 
 // UnmarshalJSON satisfies [json.Unmarshaler].
@@ -1553,6 +1601,10 @@ func (t *PrivateNetworkRequestPolicy) UnmarshalJSON(buf []byte) error {
 		*t = PrivateNetworkRequestPolicyPreflightBlock
 	case PrivateNetworkRequestPolicyPreflightWarn:
 		*t = PrivateNetworkRequestPolicyPreflightWarn
+	case PrivateNetworkRequestPolicyPermissionBlock:
+		*t = PrivateNetworkRequestPolicyPermissionBlock
+	case PrivateNetworkRequestPolicyPermissionWarn:
+		*t = PrivateNetworkRequestPolicyPermissionWarn
 	default:
 		return fmt.Errorf("unknown PrivateNetworkRequestPolicy value: %v", s)
 	}
