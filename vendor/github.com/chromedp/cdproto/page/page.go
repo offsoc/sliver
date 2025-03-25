@@ -301,18 +301,30 @@ func (p *DisableParams) Do(ctx context.Context) (err error) {
 }
 
 // EnableParams enables page domain notifications.
-type EnableParams struct{}
+type EnableParams struct {
+	EnableFileChooserOpenedEvent bool `json:"enableFileChooserOpenedEvent,omitempty,omitzero"` // If true, the Page.fileChooserOpened event will be emitted regardless of the state set by Page.setInterceptFileChooserDialog command (default: false).
+}
 
 // Enable enables page domain notifications.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-enable
+//
+// parameters:
 func Enable() *EnableParams {
 	return &EnableParams{}
 }
 
+// WithEnableFileChooserOpenedEvent if true, the Page.fileChooserOpened event
+// will be emitted regardless of the state set by
+// Page.setInterceptFileChooserDialog command (default: false).
+func (p EnableParams) WithEnableFileChooserOpenedEvent(enableFileChooserOpenedEvent bool) *EnableParams {
+	p.EnableFileChooserOpenedEvent = enableFileChooserOpenedEvent
+	return &p
+}
+
 // Do executes Page.enable against the provided context.
 func (p *EnableParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandEnable, nil, nil)
+	return cdp.Execute(ctx, CommandEnable, p, nil)
 }
 
 // GetAppManifestParams gets the processed manifest for this current
@@ -1694,6 +1706,7 @@ func (p *WaitForDebuggerParams) Do(ctx context.Context) (err error) {
 // Page.fileChooserOpened is emitted.
 type SetInterceptFileChooserDialogParams struct {
 	Enabled bool `json:"enabled"`
+	Cancel  bool `json:"cancel,omitempty,omitzero"` // If true, cancels the dialog by emitting relevant events (if any) in addition to not showing it if the interception is enabled (default: false).
 }
 
 // SetInterceptFileChooserDialog intercept file chooser requests and transfer
@@ -1710,6 +1723,14 @@ func SetInterceptFileChooserDialog(enabled bool) *SetInterceptFileChooserDialogP
 	return &SetInterceptFileChooserDialogParams{
 		Enabled: enabled,
 	}
+}
+
+// WithCancel if true, cancels the dialog by emitting relevant events (if
+// any) in addition to not showing it if the interception is enabled (default:
+// false).
+func (p SetInterceptFileChooserDialogParams) WithCancel(cancel bool) *SetInterceptFileChooserDialogParams {
+	p.Cancel = cancel
+	return &p
 }
 
 // Do executes Page.setInterceptFileChooserDialog against the provided context.

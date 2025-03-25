@@ -486,6 +486,7 @@ const (
 	PrefetchStatusPrefetchFailedMIMENotSupported                              PrefetchStatus = "PrefetchFailedMIMENotSupported"
 	PrefetchStatusPrefetchFailedNetError                                      PrefetchStatus = "PrefetchFailedNetError"
 	PrefetchStatusPrefetchFailedNon2xX                                        PrefetchStatus = "PrefetchFailedNon2XX"
+	PrefetchStatusPrefetchEvictedAfterBrowsingDataRemoved                     PrefetchStatus = "PrefetchEvictedAfterBrowsingDataRemoved"
 	PrefetchStatusPrefetchEvictedAfterCandidateRemoved                        PrefetchStatus = "PrefetchEvictedAfterCandidateRemoved"
 	PrefetchStatusPrefetchEvictedForNewerPrefetch                             PrefetchStatus = "PrefetchEvictedForNewerPrefetch"
 	PrefetchStatusPrefetchHeldback                                            PrefetchStatus = "PrefetchHeldback"
@@ -501,6 +502,9 @@ const (
 	PrefetchStatusPrefetchNotEligibleSchemeIsNotHTTPS                         PrefetchStatus = "PrefetchNotEligibleSchemeIsNotHttps"
 	PrefetchStatusPrefetchNotEligibleUserHasCookies                           PrefetchStatus = "PrefetchNotEligibleUserHasCookies"
 	PrefetchStatusPrefetchNotEligibleUserHasServiceWorker                     PrefetchStatus = "PrefetchNotEligibleUserHasServiceWorker"
+	PrefetchStatusPrefetchNotEligibleUserHasServiceWorkerNoFetchHandler       PrefetchStatus = "PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler"
+	PrefetchStatusPrefetchNotEligibleRedirectFromServiceWorker                PrefetchStatus = "PrefetchNotEligibleRedirectFromServiceWorker"
+	PrefetchStatusPrefetchNotEligibleRedirectToServiceWorker                  PrefetchStatus = "PrefetchNotEligibleRedirectToServiceWorker"
 	PrefetchStatusPrefetchNotEligibleBatterySaverEnabled                      PrefetchStatus = "PrefetchNotEligibleBatterySaverEnabled"
 	PrefetchStatusPrefetchNotEligiblePreloadingDisabled                       PrefetchStatus = "PrefetchNotEligiblePreloadingDisabled"
 	PrefetchStatusPrefetchNotFinishedInTime                                   PrefetchStatus = "PrefetchNotFinishedInTime"
@@ -530,6 +534,8 @@ func (t *PrefetchStatus) UnmarshalJSON(buf []byte) error {
 		*t = PrefetchStatusPrefetchFailedNetError
 	case PrefetchStatusPrefetchFailedNon2xX:
 		*t = PrefetchStatusPrefetchFailedNon2xX
+	case PrefetchStatusPrefetchEvictedAfterBrowsingDataRemoved:
+		*t = PrefetchStatusPrefetchEvictedAfterBrowsingDataRemoved
 	case PrefetchStatusPrefetchEvictedAfterCandidateRemoved:
 		*t = PrefetchStatusPrefetchEvictedAfterCandidateRemoved
 	case PrefetchStatusPrefetchEvictedForNewerPrefetch:
@@ -560,6 +566,12 @@ func (t *PrefetchStatus) UnmarshalJSON(buf []byte) error {
 		*t = PrefetchStatusPrefetchNotEligibleUserHasCookies
 	case PrefetchStatusPrefetchNotEligibleUserHasServiceWorker:
 		*t = PrefetchStatusPrefetchNotEligibleUserHasServiceWorker
+	case PrefetchStatusPrefetchNotEligibleUserHasServiceWorkerNoFetchHandler:
+		*t = PrefetchStatusPrefetchNotEligibleUserHasServiceWorkerNoFetchHandler
+	case PrefetchStatusPrefetchNotEligibleRedirectFromServiceWorker:
+		*t = PrefetchStatusPrefetchNotEligibleRedirectFromServiceWorker
+	case PrefetchStatusPrefetchNotEligibleRedirectToServiceWorker:
+		*t = PrefetchStatusPrefetchNotEligibleRedirectToServiceWorker
 	case PrefetchStatusPrefetchNotEligibleBatterySaverEnabled:
 		*t = PrefetchStatusPrefetchNotEligibleBatterySaverEnabled
 	case PrefetchStatusPrefetchNotEligiblePreloadingDisabled:

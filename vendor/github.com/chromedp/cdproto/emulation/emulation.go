@@ -170,6 +170,34 @@ func (p *SetDefaultBackgroundColorOverrideParams) Do(ctx context.Context) (err e
 	return cdp.Execute(ctx, CommandSetDefaultBackgroundColorOverride, p, nil)
 }
 
+// SetSafeAreaInsetsOverrideParams overrides the values for
+// env(safe-area-inset-*) and env(safe-area-max-inset-*). Unset values will
+// cause the respective variables to be undefined, even if previously
+// overridden.
+type SetSafeAreaInsetsOverrideParams struct {
+	Insets *SafeAreaInsets `json:"insets"`
+}
+
+// SetSafeAreaInsetsOverride overrides the values for env(safe-area-inset-*)
+// and env(safe-area-max-inset-*). Unset values will cause the respective
+// variables to be undefined, even if previously overridden.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setSafeAreaInsetsOverride
+//
+// parameters:
+//
+//	insets
+func SetSafeAreaInsetsOverride(insets *SafeAreaInsets) *SetSafeAreaInsetsOverrideParams {
+	return &SetSafeAreaInsetsOverrideParams{
+		Insets: insets,
+	}
+}
+
+// Do executes Emulation.setSafeAreaInsetsOverride against the provided context.
+func (p *SetSafeAreaInsetsOverrideParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetSafeAreaInsetsOverride, p, nil)
+}
+
 // SetDeviceMetricsOverrideParams overrides the values of device screen
 // dimensions (window.screen.width, window.screen.height, window.innerWidth,
 // window.innerHeight, and "device-width"/"device-height"-related CSS media
@@ -187,7 +215,6 @@ type SetDeviceMetricsOverrideParams struct {
 	DontSetVisibleSize bool               `json:"dontSetVisibleSize,omitempty,omitzero"` // Do not set visible view size, rely upon explicit setVisibleSize call.
 	ScreenOrientation  *ScreenOrientation `json:"screenOrientation,omitempty,omitzero"`  // Screen orientation override.
 	Viewport           *page.Viewport     `json:"viewport,omitempty,omitzero"`           // If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
-	DisplayFeature     *DisplayFeature    `json:"displayFeature,omitempty,omitzero"`     // If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off.
 }
 
 // SetDeviceMetricsOverride overrides the values of device screen dimensions
@@ -267,13 +294,6 @@ func (p SetDeviceMetricsOverrideParams) WithViewport(viewport *page.Viewport) *S
 	return &p
 }
 
-// WithDisplayFeature if set, the display feature of a multi-segment screen.
-// If not set, multi-segment support is turned-off.
-func (p SetDeviceMetricsOverrideParams) WithDisplayFeature(displayFeature *DisplayFeature) *SetDeviceMetricsOverrideParams {
-	p.DisplayFeature = displayFeature
-	return &p
-}
-
 // Do executes Emulation.setDeviceMetricsOverride against the provided context.
 func (p *SetDeviceMetricsOverrideParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetDeviceMetricsOverride, p, nil)
@@ -325,6 +345,54 @@ func ClearDevicePostureOverride() *ClearDevicePostureOverrideParams {
 // Do executes Emulation.clearDevicePostureOverride against the provided context.
 func (p *ClearDevicePostureOverrideParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandClearDevicePostureOverride, nil, nil)
+}
+
+// SetDisplayFeaturesOverrideParams start using the given display features to
+// pupulate the Viewport Segments API. This override can also be set in
+// setDeviceMetricsOverride().
+type SetDisplayFeaturesOverrideParams struct {
+	Features []*DisplayFeature `json:"features"`
+}
+
+// SetDisplayFeaturesOverride start using the given display features to
+// pupulate the Viewport Segments API. This override can also be set in
+// setDeviceMetricsOverride().
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setDisplayFeaturesOverride
+//
+// parameters:
+//
+//	features
+func SetDisplayFeaturesOverride(features []*DisplayFeature) *SetDisplayFeaturesOverrideParams {
+	return &SetDisplayFeaturesOverrideParams{
+		Features: features,
+	}
+}
+
+// Do executes Emulation.setDisplayFeaturesOverride against the provided context.
+func (p *SetDisplayFeaturesOverrideParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetDisplayFeaturesOverride, p, nil)
+}
+
+// ClearDisplayFeaturesOverrideParams clears the display features override
+// set with either setDeviceMetricsOverride() or setDisplayFeaturesOverride()
+// and starts using display features from the platform again. Does nothing if no
+// override is set.
+type ClearDisplayFeaturesOverrideParams struct{}
+
+// ClearDisplayFeaturesOverride clears the display features override set with
+// either setDeviceMetricsOverride() or setDisplayFeaturesOverride() and starts
+// using display features from the platform again. Does nothing if no override
+// is set.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-clearDisplayFeaturesOverride
+func ClearDisplayFeaturesOverride() *ClearDisplayFeaturesOverrideParams {
+	return &ClearDisplayFeaturesOverrideParams{}
+}
+
+// Do executes Emulation.clearDisplayFeaturesOverride against the provided context.
+func (p *ClearDisplayFeaturesOverrideParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandClearDisplayFeaturesOverride, nil, nil)
 }
 
 // SetScrollbarsHiddenParams [no description].
@@ -1044,9 +1112,12 @@ const (
 	CommandSetAutoDarkModeOverride           = "Emulation.setAutoDarkModeOverride"
 	CommandSetCPUThrottlingRate              = "Emulation.setCPUThrottlingRate"
 	CommandSetDefaultBackgroundColorOverride = "Emulation.setDefaultBackgroundColorOverride"
+	CommandSetSafeAreaInsetsOverride         = "Emulation.setSafeAreaInsetsOverride"
 	CommandSetDeviceMetricsOverride          = "Emulation.setDeviceMetricsOverride"
 	CommandSetDevicePostureOverride          = "Emulation.setDevicePostureOverride"
 	CommandClearDevicePostureOverride        = "Emulation.clearDevicePostureOverride"
+	CommandSetDisplayFeaturesOverride        = "Emulation.setDisplayFeaturesOverride"
+	CommandClearDisplayFeaturesOverride      = "Emulation.clearDisplayFeaturesOverride"
 	CommandSetScrollbarsHidden               = "Emulation.setScrollbarsHidden"
 	CommandSetDocumentCookieDisabled         = "Emulation.setDocumentCookieDisabled"
 	CommandSetEmitTouchEventsForMouse        = "Emulation.setEmitTouchEventsForMouse"

@@ -126,6 +126,7 @@ const (
 	EventBackgroundServiceRecordingStateChanged              = "BackgroundService.recordingStateChanged"
 	EventBackgroundServiceBackgroundServiceEventReceived     = "BackgroundService.backgroundServiceEventReceived"
 	CommandBluetoothEmulationEnable                          = bluetoothemulation.CommandEnable
+	CommandBluetoothEmulationSetSimulatedCentralState        = bluetoothemulation.CommandSetSimulatedCentralState
 	CommandBluetoothEmulationDisable                         = bluetoothemulation.CommandDisable
 	CommandBluetoothEmulationSimulatePreconnectedPeripheral  = bluetoothemulation.CommandSimulatePreconnectedPeripheral
 	CommandBluetoothEmulationSimulateAdvertisement           = bluetoothemulation.CommandSimulateAdvertisement
@@ -147,6 +148,7 @@ const (
 	CommandBrowserSetDockTile                                = browser.CommandSetDockTile
 	CommandBrowserExecuteBrowserCommand                      = browser.CommandExecuteBrowserCommand
 	CommandBrowserAddPrivacySandboxEnrollmentOverride        = browser.CommandAddPrivacySandboxEnrollmentOverride
+	CommandBrowserAddPrivacySandboxCoordinatorKeyConfig      = browser.CommandAddPrivacySandboxCoordinatorKeyConfig
 	EventBrowserDownloadWillBegin                            = "Browser.downloadWillBegin"
 	EventBrowserDownloadProgress                             = "Browser.downloadProgress"
 	CommandCSSAddRule                                        = css.CommandAddRule
@@ -338,9 +340,12 @@ const (
 	CommandEmulationSetAutoDarkModeOverride                  = emulation.CommandSetAutoDarkModeOverride
 	CommandEmulationSetCPUThrottlingRate                     = emulation.CommandSetCPUThrottlingRate
 	CommandEmulationSetDefaultBackgroundColorOverride        = emulation.CommandSetDefaultBackgroundColorOverride
+	CommandEmulationSetSafeAreaInsetsOverride                = emulation.CommandSetSafeAreaInsetsOverride
 	CommandEmulationSetDeviceMetricsOverride                 = emulation.CommandSetDeviceMetricsOverride
 	CommandEmulationSetDevicePostureOverride                 = emulation.CommandSetDevicePostureOverride
 	CommandEmulationClearDevicePostureOverride               = emulation.CommandClearDevicePostureOverride
+	CommandEmulationSetDisplayFeaturesOverride               = emulation.CommandSetDisplayFeaturesOverride
+	CommandEmulationClearDisplayFeaturesOverride             = emulation.CommandClearDisplayFeaturesOverride
 	CommandEmulationSetScrollbarsHidden                      = emulation.CommandSetScrollbarsHidden
 	CommandEmulationSetDocumentCookieDisabled                = emulation.CommandSetDocumentCookieDisabled
 	CommandEmulationSetEmitTouchEventsForMouse               = emulation.CommandSetEmitTouchEventsForMouse
@@ -526,6 +531,10 @@ const (
 	EventNetworkWebTransportCreated                          = "Network.webTransportCreated"
 	EventNetworkWebTransportConnectionEstablished            = "Network.webTransportConnectionEstablished"
 	EventNetworkWebTransportClosed                           = "Network.webTransportClosed"
+	EventNetworkDirectTCPSocketCreated                       = "Network.directTCPSocketCreated"
+	EventNetworkDirectTCPSocketOpened                        = "Network.directTCPSocketOpened"
+	EventNetworkDirectTCPSocketAborted                       = "Network.directTCPSocketAborted"
+	EventNetworkDirectTCPSocketClosed                        = "Network.directTCPSocketClosed"
 	EventNetworkRequestWillBeSentExtraInfo                   = "Network.requestWillBeSentExtraInfo"
 	EventNetworkResponseReceivedExtraInfo                    = "Network.responseReceivedExtraInfo"
 	EventNetworkResponseReceivedEarlyHints                   = "Network.responseReceivedEarlyHints"
@@ -870,7 +879,7 @@ type empty struct{}
 var emptyVal = &empty{}
 
 // UnmarshalMessage unmarshals the message result or params.
-func UnmarshalMessage(msg *Message) (any, error) {
+func UnmarshalMessage(msg *Message, opts ...jsonv2.Options) (any, error) {
 	var v any
 	switch msg.Method {
 	case CommandAccessibilityDisable:
@@ -957,6 +966,8 @@ func UnmarshalMessage(msg *Message) (any, error) {
 		v = new(backgroundservice.EventBackgroundServiceEventReceived)
 	case CommandBluetoothEmulationEnable:
 		return emptyVal, nil
+	case CommandBluetoothEmulationSetSimulatedCentralState:
+		return emptyVal, nil
 	case CommandBluetoothEmulationDisable:
 		return emptyVal, nil
 	case CommandBluetoothEmulationSimulatePreconnectedPeripheral:
@@ -998,6 +1009,8 @@ func UnmarshalMessage(msg *Message) (any, error) {
 	case CommandBrowserExecuteBrowserCommand:
 		return emptyVal, nil
 	case CommandBrowserAddPrivacySandboxEnrollmentOverride:
+		return emptyVal, nil
+	case CommandBrowserAddPrivacySandboxCoordinatorKeyConfig:
 		return emptyVal, nil
 	case EventBrowserDownloadWillBegin:
 		v = new(browser.EventDownloadWillBegin)
@@ -1381,11 +1394,17 @@ func UnmarshalMessage(msg *Message) (any, error) {
 		return emptyVal, nil
 	case CommandEmulationSetDefaultBackgroundColorOverride:
 		return emptyVal, nil
+	case CommandEmulationSetSafeAreaInsetsOverride:
+		return emptyVal, nil
 	case CommandEmulationSetDeviceMetricsOverride:
 		return emptyVal, nil
 	case CommandEmulationSetDevicePostureOverride:
 		return emptyVal, nil
 	case CommandEmulationClearDevicePostureOverride:
+		return emptyVal, nil
+	case CommandEmulationSetDisplayFeaturesOverride:
+		return emptyVal, nil
+	case CommandEmulationClearDisplayFeaturesOverride:
 		return emptyVal, nil
 	case CommandEmulationSetScrollbarsHidden:
 		return emptyVal, nil
@@ -1757,6 +1776,14 @@ func UnmarshalMessage(msg *Message) (any, error) {
 		v = new(network.EventWebTransportConnectionEstablished)
 	case EventNetworkWebTransportClosed:
 		v = new(network.EventWebTransportClosed)
+	case EventNetworkDirectTCPSocketCreated:
+		v = new(network.EventDirectTCPSocketCreated)
+	case EventNetworkDirectTCPSocketOpened:
+		v = new(network.EventDirectTCPSocketOpened)
+	case EventNetworkDirectTCPSocketAborted:
+		v = new(network.EventDirectTCPSocketAborted)
+	case EventNetworkDirectTCPSocketClosed:
+		v = new(network.EventDirectTCPSocketClosed)
 	case EventNetworkRequestWillBeSentExtraInfo:
 		v = new(network.EventRequestWillBeSentExtraInfo)
 	case EventNetworkResponseReceivedExtraInfo:
@@ -2400,7 +2427,7 @@ func UnmarshalMessage(msg *Message) (any, error) {
 	default:
 		return nil, cdp.ErrMsgMissingParamsOrResult
 	}
-	if err := jsonv2.Unmarshal(buf, v); err != nil {
+	if err := jsonv2.Unmarshal(buf, v, opts...); err != nil {
 		return nil, err
 	}
 	return v, nil
