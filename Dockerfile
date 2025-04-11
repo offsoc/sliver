@@ -9,7 +9,7 @@
 
 # STAGE: base
 ## Compiles Sliver for use
-FROM golang:1.24.1 AS base
+FROM golang:1.24.2 AS base
 
 ### Base packages
 RUN apt-get update --fix-missing && apt-get -y install \
