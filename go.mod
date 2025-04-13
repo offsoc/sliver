@@ -49,7 +49,7 @@ require (
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/net v0.33.0
 	golang.org/x/sys v0.32.0
-	golang.org/x/term v0.28.0
+	golang.org/x/term v0.31.0
 	golang.org/x/text v0.21.0
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
