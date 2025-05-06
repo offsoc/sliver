@@ -49,7 +49,7 @@ require (
 	golang.org/x/crypto v0.37.0
 	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac
 	golang.org/x/net v0.39.0
-	golang.org/x/sys v0.32.0
+	golang.org/x/sys v0.33.0
 	golang.org/x/term v0.31.0
 	golang.org/x/text v0.24.0
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
