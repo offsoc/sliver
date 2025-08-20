@@ -62,7 +62,7 @@ require (
 	gorm.io/gorm v1.30.1
 	gvisor.dev/gvisor v0.0.0-20250503011706-39ed1f5ac29c
 	modernc.org/sqlite v1.38.2
-	tailscale.com v1.86.2
+	tailscale.com v1.86.4
 )
 
 require (
