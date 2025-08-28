@@ -42,7 +42,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tetratelabs/wazero v1.9.0
 	github.com/things-go/go-socks5 v0.0.6
-	github.com/ulikunitz/xz v0.5.12
+	github.com/ulikunitz/xz v0.5.14
 	github.com/xlab/treeprint v1.2.0
 	github.com/yiya1989/sshkrb5 v0.0.1
 	golang.org/x/crypto v0.41.0
