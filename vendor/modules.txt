@@ -1213,7 +1213,7 @@ modernc.org/sqlite/lib
 ## explicit; go 1.23.0
 mvdan.cc/sh/v3/fileutil
 mvdan.cc/sh/v3/syntax
-# tailscale.com v1.86.2
+# tailscale.com v1.86.5
 ## explicit; go 1.24.4
 tailscale.com
 tailscale.com/appc
