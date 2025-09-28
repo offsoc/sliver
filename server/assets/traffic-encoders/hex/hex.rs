@@ -1,7 +1,6 @@
 extern crate alloc;
 extern crate core;
 extern crate hex;
-extern crate wee_alloc;
 
 use std::alloc::{alloc, dealloc, Layout};
 use std::slice;
@@ -27,19 +26,13 @@ extern "C" {
 /// WebAssembly export that accepts a string (linear memory offset, byteCount)
 /// and returns a pointer/size pair packed into a u64.
 ///
-/// Note: The return value is leaked to the caller, so it must call
-/// [`deallocate`] when finished.
-/// Note: This uses a u64 instead of two result values for compatibility with
-/// WebAssembly 1.0.
 #[cfg_attr(all(target_arch = "wasm32"), export_name = "encode")]
 #[no_mangle]
 pub unsafe extern "C" fn _encode(ptr: u32, len: u32) -> u64 {
     let input = slice::from_raw_parts_mut(ptr as *mut u8, len as usize);
     let output = encode(input);
     let (ptr, len) = (output.as_ptr(), output.len());
-    // Note: This changes ownership of the pointer to the external caller. If
-    // we didn't call forget, the caller would read back a corrupt value. Since
-    // we call forget, the caller must deallocate externally to prevent leaks.
+    // Note: This changes ownership of the pointer to the external caller.
     std::mem::forget(output);
     return ((ptr as u64) << 32) | len as u64;
 }
@@ -47,21 +40,13 @@ pub unsafe extern "C" fn _encode(ptr: u32, len: u32) -> u64 {
 /// WebAssembly export that accepts a string (linear memory offset, byteCount)
 /// and returns a pointer/size pair packed into a u64.
 ///
-/// Note: The return value is leaked to the caller, so it must call
-/// [`deallocate`] when finished.
-/// Note: This uses a u64 instead of two result values for compatibility with
-/// WebAssembly 1.0.
 #[cfg_attr(all(target_arch = "wasm32"), export_name = "decode")]
 #[no_mangle]
 pub unsafe extern "C" fn _decode(ptr: u32, len: u32) -> u64 {
     let input = slice::from_raw_parts_mut(ptr as *mut u8, len as usize);
-    // log(&format!("input size: {:?}", input.len()));
-
     let output = decode(input);
     let (ptr, len) = (output.as_ptr(), output.len());
-    // Note: This changes ownership of the pointer to the external caller. If
-    // we didn't call forget, the caller would read back a corrupt value. Since
-    // we call forget, the caller must deallocate externally to prevent leaks.
+    // Note: This changes ownership of the pointer to the external caller.
     std::mem::forget(output);
     return ((ptr as u64) << 32) | len as u64;
 }
@@ -76,18 +61,12 @@ fn log(message: &String) {
 
 /// Returns a pointer and size pair for the given string in a way compatible
 /// with WebAssembly numeric types.
-///
-/// Note: This doesn't change the ownership of the String. To intentionally
-/// leak it, use [`std::mem::forget`] on the input after calling this.
 unsafe fn string_to_ptr(s: &String) -> (u32, u32) {
     return (s.as_ptr() as u32, s.len() as u32);
 }
 
 /// WebAssembly export that allocates a pointer (linear memory offset) that can
 /// be used for a string.
-///
-/// This is an ownership transfer, which means the caller must call
-/// [`deallocate`] when finished.
 #[cfg_attr(all(target_arch = "wasm32"), export_name = "malloc")]
 #[no_mangle]
 pub extern "C" fn _allocate(size: u32) -> *mut u8 {
@@ -104,8 +83,7 @@ unsafe fn allocate(size: usize) -> *mut u8 {
     return ptr;
 }
 
-/// WebAssembly export that deallocates a pointer of the given size (linear
-/// memory offset, byteCount) allocated by [`allocate`].
+/// WebAssembly export that deallocates a pointer of the given size.
 #[cfg_attr(all(target_arch = "wasm32"), export_name = "free")]
 #[no_mangle]
 pub unsafe extern "C" fn _deallocate(ptr: u32, size: u32) {
@@ -114,5 +92,6 @@ pub unsafe extern "C" fn _deallocate(ptr: u32, size: u32) {
     dealloc(ptr as *mut u8, layout);
 }
 
+// Custom allocator implementation (for demonstration purposes, you can use `std::alloc::System` or other allocators).
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: System = System;
