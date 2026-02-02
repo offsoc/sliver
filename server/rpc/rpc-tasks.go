@@ -38,7 +38,7 @@ import (
 	"github.com/bishopfox/sliver/server/db/models"
 	"github.com/bishopfox/sliver/server/generate"
 	"github.com/bishopfox/sliver/server/log"
-	"github.com/bishopfox/sliver/server/sgn"
+	"github.com/bishopfox/sliver/server/encoders/shellcode/sgn"
 	"github.com/bishopfox/sliver/util"
 
 	"google.golang.org/grpc/codes"
@@ -54,7 +54,7 @@ func (rpc *Server) Task(ctx context.Context, req *sliverpb.TaskReq) (*sliverpb.T
 	resp := &sliverpb.Task{Response: &commonpb.Response{}}
 	err := rpc.GenericHandler(req, resp)
 	if err != nil {
-		return nil, err
+		return nil, rpcError(err)
 	}
 	return resp, nil
 }
@@ -91,10 +91,10 @@ func (rpc *Server) Migrate(ctx context.Context, req *clientpb.MigrateReq) (*sliv
 		if req.Name == "" {
 			name, err = codenames.GetCodename()
 			if err != nil {
-				return nil, err
+				return nil, rpcError(err)
 			}
 		} else if err := util.AllowedName(name); err != nil {
-			return nil, err
+			return nil, status.Error(codes.InvalidArgument, err.Error())
 		} else {
 			name = req.Name
 		}
@@ -106,25 +106,25 @@ func (rpc *Server) Migrate(ctx context.Context, req *clientpb.MigrateReq) (*sliv
 		config.ObfuscateSymbols = true
 		build, err := generate.GenerateConfig(name, config)
 		if err != nil {
-			return nil, err
+			return nil, rpcError(err)
 		}
 
 		// retrieve http c2 implant config
 		httpC2Config, err := db.LoadHTTPC2ConfigByName(req.Config.HTTPC2ConfigName)
 		if err != nil {
-			return nil, err
+			return nil, rpcError(err)
 		}
 
 		shellcodePath, err := generate.SliverShellcode(name, build, config, httpC2Config.ImplantConfig)
 		if err != nil {
-			return nil, err
+			return nil, rpcError(err)
 		}
 		shellcode, _ = os.ReadFile(shellcodePath)
 		// Save the implant config in the database so that the server recognizes it when it tries to connect
 		config.ID = ""
 		savedConfig, err := db.SaveImplantConfig(config)
 		if err != nil {
-			return nil, err
+			return nil, rpcError(err)
 		}
 		build.ImplantConfigID = savedConfig.ID
 
@@ -135,7 +135,7 @@ func (rpc *Server) Migrate(ctx context.Context, req *clientpb.MigrateReq) (*sliv
 		build.Name = fmt.Sprintf("%s_%d", build.Name, time.Now().Unix())
 		_, err = db.SaveImplantBuild(build)
 		if err != nil {
-			return nil, err
+			return nil, rpcError(err)
 		}
 
 	}
@@ -149,7 +149,7 @@ func (rpc *Server) Migrate(ctx context.Context, req *clientpb.MigrateReq) (*sliv
 	case clientpb.ShellcodeEncoder_SHIKATA_GA_NAI:
 		shellcode, err = sgn.EncodeShellcode(shellcode, arch, 1, []byte{})
 		if err != nil {
-			return nil, err
+			return nil, rpcError(err)
 		}
 
 	}
@@ -165,7 +165,7 @@ func (rpc *Server) Migrate(ctx context.Context, req *clientpb.MigrateReq) (*sliv
 	err = rpc.GenericHandler(migrateReq, resp)
 
 	if err != nil {
-		return nil, err
+		return nil, rpcError(err)
 	}
 
 	return resp, nil
@@ -202,10 +202,11 @@ func (rpc *Server) ExecuteAssembly(ctx context.Context, req *sliverpb.ExecuteAss
 		req.Method,
 		req.ClassName,
 		req.AppDomain,
+		req.Runtime,
 	)
 	if err != nil {
 		tasksLog.Errorf("Execute assembly failed: %s", err)
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	resp := &sliverpb.ExecuteAssembly{Response: &commonpb.Response{}}
@@ -232,7 +233,7 @@ func (rpc *Server) ExecuteAssembly(ctx context.Context, req *sliverpb.ExecuteAss
 
 	}
 	if err != nil {
-		return nil, err
+		return nil, rpcError(err)
 	}
 	return resp, nil
 }
@@ -266,10 +267,10 @@ func (rpc *Server) Sideload(ctx context.Context, req *sliverpb.SideloadReq) (*sl
 	}
 
 	if getOS(session, beacon) == "windows" {
-		shellcode, err := generate.DonutShellcodeFromPE(req.Data, arch, false, strings.Join(req.Args, " "), "", req.EntryPoint, req.IsDLL, req.IsUnicode, false)
+		shellcode, err := generate.DonutShellcodeFromPE(req.Data, arch, false, strings.Join(req.Args, " "), "", req.EntryPoint, req.IsDLL, req.IsUnicode, false, nil)
 		if err != nil {
 			tasksLog.Errorf("Sideload failed: %s", err)
-			return nil, err
+			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
 		req = &sliverpb.SideloadReq{
 			Request:     req.Request,
@@ -283,7 +284,7 @@ func (rpc *Server) Sideload(ctx context.Context, req *sliverpb.SideloadReq) (*sl
 	resp := &sliverpb.Sideload{Response: &commonpb.Response{}}
 	err = rpc.GenericHandler(req, resp)
 	if err != nil {
-		return nil, err
+		return nil, rpcError(err)
 	}
 	return resp, nil
 }
@@ -314,7 +315,7 @@ func (rpc *Server) SpawnDll(ctx context.Context, req *sliverpb.InvokeSpawnDllReq
 	resp := &sliverpb.SpawnDll{Response: &commonpb.Response{}}
 	offset, err := getExportOffsetFromMemory(req.Data, req.EntryPoint)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	spawnDLLReq := &sliverpb.SpawnDllReq{
 		Data:        req.Data,
@@ -328,7 +329,7 @@ func (rpc *Server) SpawnDll(ctx context.Context, req *sliverpb.InvokeSpawnDllReq
 	}
 	err = rpc.GenericHandler(spawnDLLReq, resp)
 	if err != nil {
-		return nil, err
+		return nil, rpcError(err)
 	}
 	return resp, nil
 }
@@ -372,7 +373,7 @@ func getSliverShellcode(name string) ([]byte, string, error) {
 		if err != nil {
 			return []byte{}, "", err
 		}
-		data, err = generate.DonutShellcodeFromPE(fileData, config.GOARCH, false, "", "", "", false, false, false)
+		data, err = generate.DonutShellcodeFromPE(fileData, config.GOARCH, false, "", "", "", false, false, false, config.DonutConfig)
 		if err != nil {
 			rpcLog.Errorf("DonutShellcodeFromPE error: %v\n", err)
 			return []byte{}, "", err

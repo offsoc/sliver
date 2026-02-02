@@ -22,10 +22,12 @@ import (
 	"fmt"
 
 	"github.com/bishopfox/sliver/client/assets"
+	"github.com/bishopfox/sliver/client/command/aka"
 	"github.com/bishopfox/sliver/client/command/alias"
 	"github.com/bishopfox/sliver/client/command/backdoor"
 	"github.com/bishopfox/sliver/client/command/cursed"
 	"github.com/bishopfox/sliver/client/command/dllhijack"
+	"github.com/bishopfox/sliver/client/command/edit"
 	"github.com/bishopfox/sliver/client/command/environment"
 	"github.com/bishopfox/sliver/client/command/exec"
 	"github.com/bishopfox/sliver/client/command/extensions"
@@ -47,6 +49,7 @@ import (
 	"github.com/bishopfox/sliver/client/command/tasks"
 	"github.com/bishopfox/sliver/client/command/wasm"
 	"github.com/bishopfox/sliver/client/command/wireguard"
+	"github.com/bishopfox/sliver/client/command/hexedit"
 	client "github.com/bishopfox/sliver/client/console"
 	consts "github.com/bishopfox/sliver/client/constants"
 	"github.com/reeflective/console"
@@ -61,6 +64,10 @@ func SliverCommands(con *client.SliverClient) console.Commands {
 			CompletionOptions: cobra.CompletionOptions{
 				HiddenDefaultCmd: true,
 			},
+		}
+		if !con.IsCLI {
+			sliver.SilenceErrors = true
+			sliver.SilenceUsage = true
 		}
 
 		// Utility function to be used for binding new commands to
@@ -78,6 +85,7 @@ func SliverCommands(con *client.SliverClient) console.Commands {
 			// use.Commands,
 			tasks.Commands,
 			pivots.Commands,
+			aka.ImplantCommands,
 		)
 
 		// [ Info ]
@@ -92,6 +100,8 @@ func SliverCommands(con *client.SliverClient) console.Commands {
 
 		// [ Filesystem ]
 		bind(consts.FilesystemHelpGroup,
+			edit.Commands,
+			hexedit.Commands,
 			filesystem.Commands,
 		)
 
