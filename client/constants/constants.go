@@ -220,6 +220,8 @@ const (
 	CdStr       = "cd"
 	PwdStr      = "pwd"
 	CatStr      = "cat"
+	EditStr     = "edit"
+	HexEditStr  = "hex-edit"
 	DownloadStr = "download"
 	HeadStr     = "head"
 	TailStr     = "tail"
@@ -276,6 +278,7 @@ const (
 	WgPortFwdStr          = "wg-portfwd"
 	MonitorStr            = "monitor"
 	MonitorConfigStr      = "config"
+	MCPStr                = "mcp"
 	SSHStr                = "ssh"
 	DLLHijackStr          = "dllhijack"
 	InteractiveStr        = "interactive"
@@ -296,7 +299,8 @@ const (
 	GetPrivsStr = "getprivs"
 	ConnectStr  = "connect"
 
-	ShikataGaNai = "shikata-ga-nai"
+	ShikataGaNai         = "shikata-ga-nai"
+	ShellcodeEncodersStr = "shellcode-encoders"
 
 	Cursed         = "cursed"
 	CursedChrome   = "chrome"
